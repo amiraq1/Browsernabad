@@ -46,9 +46,7 @@
         </activity>
         
         <!-- Settings Activity -->
-        <activity 
-            android:name=".ui.main.SettingsActivity"
-            android:parentActivityName=".ui.main.MainActivity" />
+
 
     </application>
 
