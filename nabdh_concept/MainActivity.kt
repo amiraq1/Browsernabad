@@ -61,6 +61,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         // زر درع AdBlock
+        // الحالة الافتراضية: مفعل (مطابق للـ ViewModel)
+        binding.btnShield.alpha = 1.0f
+        binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
+
         binding.btnShield.setOnClickListener {
             val isActive = binding.btnShield.alpha == 1.0f
             if (isActive) {
