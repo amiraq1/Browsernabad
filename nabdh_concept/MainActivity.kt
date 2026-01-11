@@ -1,206 +1,122 @@
 package com.nabdh.browser.ui.main
 
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
-import androidx.activity.viewModels
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.EditText
+import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
-import androidx.lifecycle.lifecycleScope
 import com.nabdh.browser.R
-import com.nabdh.browser.databinding.ActivityMainBinding
-import kotlinx.coroutines.flow.collectLatest
-import org.mozilla.geckoview.GeckoRuntime
 
-class MainActivity : AppCompatActivity(), BrowserMenuFragment.MenuListener {
+class MainActivity : AppCompatActivity() {
 
-    // Note: In a real project, ViewBinding is generated from XML.
-    // Assuming ActivityMainBinding exists mapping to activity_main.xml
-    private lateinit var binding: ActivityMainBinding
-    private val viewModel: PulseViewModel by viewModels()
-    private val geckoRuntime by lazy { GeckoRuntime.create(this) }
+    private lateinit var webView: WebView
+    private lateinit var etAddress: EditText
+    private lateinit var btnGo: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Avant-Garde Mode: Full Immersion
-        // This makes the app draw behind status and navigation bars
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
-        setupEngine()
-        setupUI()
-        observePulse()
-    }
+        // 1. تعريف العناصر
+        webView = findViewById(R.id.webView)
+        etAddress = findViewById(R.id.etAddress)
+        btnGo = findViewById(R.id.btnGo)
 
-    override fun onResume() {
-        super.onResume()
-        // إعادة تحميل الإعدادات عند العودة من شاشة Settings
-        viewModel.refreshSettings() 
-    }
-
-    private fun setupEngine() {
-        // Initialize the Mozilla Engine
-        geckoRuntime = GeckoRuntime.create(this)
-    }
-
-    private fun setupUI() {
-        // Handle "Go" action on the keyboard
-        binding.bottomAddressBar.setOnEditorActionListener { v, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO) {
-                viewModel.loadUrl(v.text.toString())
-                // Hide keyboard and focusing logic (omitted)
-                binding.geckoView.requestFocus()
-                true
-            } else {
-                false
-            }
+        // 2. إعدادات المتصفح (WebSettings)
+        webView.settings.apply {
+            javaScriptEnabled = true // تفعيل جافاسكريبت
+            domStorageEnabled = true // ضروري للمواقع الحديثة
+            builtInZoomControls = true
+            displayZoomControls = false
         }
 
-        // عند الضغط على أيقونة القفل، يتم تفعيل الوضع الشبحي
-        binding.ivSecurity.setOnClickListener {
-            viewModel.toggleGhostMode()
-            
-            // تأثير اهتزاز بسيط (Haptic Feedback) ليشعر المستخدم بالتغيير
-            it.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM)
-        }
-
-        // زر درع AdBlock
-        // الحالة الافتراضية: مفعل (مطابق للـ ViewModel)
-        binding.btnShield.alpha = 1.0f
-        binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
-
-        binding.btnShield.setOnClickListener {
-            // ... (نفس الكود السابق)
-             val isActive = binding.btnShield.alpha == 1.0f
-            if (isActive) {
-                binding.btnShield.alpha = 0.3f
-                binding.btnShield.setColorFilter(android.graphics.Color.GRAY)
-                android.widget.Toast.makeText(this, "AdBlocker OFF ⚠️", android.widget.Toast.LENGTH_SHORT).show()
-                viewModel.toggleAdBlock(false)
-            } else {
-                binding.btnShield.alpha = 1.0f
-                binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
-                android.widget.Toast.makeText(this, "AdBlocker ON 🛡️", android.widget.Toast.LENGTH_SHORT).show()
-                viewModel.toggleAdBlock(true)
-            }
-        }
-        
-        // === إعداد Speed Dial (صفحة البداية) ===
-        val speedDialAdapter = SpeedDialAdapter { url ->
-            // عند الضغط على أيقونة:
-            binding.bottomAddressBar.setText(url) // اكتب الرابط
-            viewModel.loadUrl(url) // حمله
-        }
-        
-        binding.rvSpeedDial.adapter = speedDialAdapter
-        // تحديد عدد الأعمدة (للتأكيد، رغم وجوده في XML)
-        binding.rvSpeedDial.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
-        // ربط زر القائمة لفتح الـ Bottom Sheet
-        binding.ivMenu.setOnClickListener {
-            val menuFragment = BrowserMenuFragment()
-            menuFragment.listener = this // ربط هذا الـ Activity كمستمع
-            menuFragment.show(supportFragmentManager, "BrowserMenu")
-        }
-    }
-
-    // تم حذف showMenu() لأننا نستخدم الفرامنت مباشرة الآن
-
-    // === تنفيذ أوامر القائمة (Menu Implementation) ===
-
-    override fun onBackClicked() {
-        viewModel.currentSession.value?.let { session ->
-            session.goBack()
-        }
-    }
-
-    override fun onForwardClicked() {
-        viewModel.currentSession.value?.goForward()
-    }
-
-    override fun onReloadClicked() {
-        viewModel.currentSession.value?.reload()
-    }
-    
-    override fun onHomeClicked() {
-        // العودة لصفحة البداية (Speed Dial)
-        viewModel.loadUrl("") 
-    }
-
-    override fun onShareClicked() {
-        val currentUrl = viewModel.url.value
-        if (currentUrl.isNotEmpty()) {
-            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(android.content.Intent.EXTRA_TEXT, currentUrl)
-            }
-            startActivity(android.content.Intent.createChooser(intent, "Share Link via"))
-        }
-    }
-    
-    override fun onSettingsClicked() {
-        val intent = android.content.Intent(this, com.nabdh.browser.ui.main.SettingsActivity::class.java)
-        startActivity(intent)
-    }
-
-    private fun observePulse() {
-        // Connect engine
-        lifecycleScope.launchWhenStarted {
-            viewModel.currentSession.collectLatest { session ->
-                session?.let { 
-                    it.open(geckoRuntime)
-                    binding.geckoView.setSession(it)
-                }
-            }
-        }
-
-        // Pulse Animation
-        lifecycleScope.launchWhenStarted {
-            viewModel.pulseIntensity.collectLatest { intensity ->
-                binding.pulseIndicator.updateIntensity(intensity)
+        // 3. منع فتح الروابط خارج التطبيق (WebViewClient)
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val url = request?.url.toString()
                 
-                val alpha = if (intensity > 0.6f) 0.8f else 1.0f
-                binding.addressBarLayout.animate()
-                    .alpha(alpha)
-                    .setDuration(200)
-                    .start()
+                // السماح ببروتوكولات الويب العادية
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    return false // المتصفح يعالجها (False = لا تتدخل بالنظام)
+                }
+                
+                // معالجة الروابط الخارجية (مثل tel:, mailto:, intent:)
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(intent)
+                    return true // لقد عالجناها يدوياً
+                } catch (e: Exception) {
+                    return true // تجاهل الخطأ
+                }
+            }
+
+            // تحديث شريط العنوان عند تغير الصفحة
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                url?.let { if (!etAddress.isFocused) etAddress.setText(it) }
             }
         }
 
-        // مراقبة وضع الشبح لتغيير الألوان
-        lifecycleScope.launchWhenStarted {
-            viewModel.isGhostMode.collectLatest { isGhost ->
-                if (isGhost) {
-                    binding.pulseIndicator.setPulseColor("#00FFFF") 
-                    binding.ivSecurity.setColorFilter(android.graphics.Color.parseColor("#00FFFF"))
-                    binding.addressBarLayout.setBackgroundColor(android.graphics.Color.parseColor("#0D0D0D"))
-                    android.widget.Toast.makeText(this@MainActivity, "Ghost Mode Active 👻", android.widget.Toast.LENGTH_SHORT).show()
+        // 4. معالجة شريط التقدم والعناوين
+        val progressBar = findViewById<android.widget.ProgressBar>(R.id.progressBar)
+        
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                if (newProgress == 100) {
+                    progressBar.visibility = android.view.View.GONE
                 } else {
-                    binding.pulseIndicator.setPulseColor("#E53935")
-                    binding.ivSecurity.setColorFilter(android.graphics.Color.parseColor("#E53935"))
-                    binding.addressBarLayout.setBackgroundColor(android.graphics.Color.parseColor("#1A1A1A"))
-                    android.widget.Toast.makeText(this@MainActivity, "Standard Mode", android.widget.Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = android.view.View.VISIBLE
+                    progressBar.progress = newProgress
                 }
             }
         }
 
-        // === مراقبة الرابط لإخفاء/إظهار صفحة البداية ===
-        lifecycleScope.launchWhenStarted {
-            viewModel.url.collectLatest { currentUrl ->
-                if (currentUrl.isEmpty()) {
-                    // نحن في صفحة البداية
-                    binding.rvSpeedDial.visibility = android.view.View.VISIBLE
-                    binding.rvSpeedDial.alpha = 0f
-                    binding.rvSpeedDial.animate().alpha(1f).setDuration(500).start()
-                    
-                    binding.geckoView.visibility = android.view.View.INVISIBLE
+        // 5. منطق شريط العنوان (جوجل أو رابط)
+        val goAction = {
+            val input = etAddress.text.toString().trim()
+            if (input.isNotEmpty()) {
+                val url = if (input.startsWith("http://") || input.startsWith("https://")) {
+                    input
+                } else if (input.contains(".")) {
+                    "https://$input"
                 } else {
-                    // تم تحميل صفحة
-                    binding.rvSpeedDial.visibility = android.view.View.GONE
-                    binding.geckoView.visibility = android.view.View.VISIBLE
+                    "https://www.google.com/search?q=$input"
                 }
+                webView.loadUrl(url)
+                webView.clearFocus() // إخفاء الكيبورد (تقريباً)
             }
         }
+
+        btnGo.setOnClickListener { goAction() }
+
+        etAddress.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                goAction()
+                true
+            } else false
+        }
+
+        // 6. زر الرجوع (System Back Button)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
+        // تحميل الصفحة الافتراضية
+        webView.loadUrl("https://www.google.com")
     }
 }

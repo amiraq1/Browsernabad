@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.NabdhBrowser" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#E53935</item> <!-- الأحمر النبضي -->
+        <item name="colorPrimaryVariant">#B71C1C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#00FFFF</item> <!-- السيان (للشبح) -->
+        <item name="colorSecondaryVariant">#018786</item>
+        <item name="colorOnSecondary">#000000</item>
+        
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">#1A1A1A</item>
+        <!-- Customize your theme here. -->
+        <item name="android:windowBackground">#1A1A1A</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+</resources>

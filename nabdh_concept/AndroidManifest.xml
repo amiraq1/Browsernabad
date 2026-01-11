@@ -2,41 +2,49 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nabdh.browser">
 
-    <!-- Permissions -->
+    <!-- Permissions required for a Browser -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     
-    <!-- Optional Location Permissions for Web Content -->
+    <!-- Location (Optional for websites that need it) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     
-    <!-- Download Permission (Max SDK 28 as newer versions use Scoped Storage) -->
+    <!-- Downloads handling (for older Android versions) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
-        android:name=".NabdhApp"
-        android:allowBackup="false"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NabdhBrowser"
-        android:extractNativeLibs="true"
-        android:hardwareAccelerated="true"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true">
 
+        <!-- Main Browser Activity -->
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.NabdhBrowser">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
+            <!-- Handle web links (Optional deep linking) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
         </activity>
-
+        
         <!-- Settings Activity -->
         <activity 
             android:name=".ui.main.SettingsActivity"

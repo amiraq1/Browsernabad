@@ -2,106 +2,68 @@
 <androidx.constraintlayout.widget.ConstraintLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="#FFFFFF">
 
-    <!-- 1. The Pulse Indicator (Overlay on top) -->
-    <!-- يظهر كمؤشر حيوي فوق المحتوى في الجزء العلوي -->
-    <com.nabdh.browser.ui.components.PulseIndicatorView
-        android:id="@+id/pulseIndicator"
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@android:color/transparent"
-        android:elevation="10dp"
+        android:layout_height="4dp"
+        android:max="100"
+        android:progressDrawable="@drawable/progress_drawable"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 2. The Browser Engine (GeckoView) -->
-    <!-- محصور بين أعلى الشاشة وشريط العناوين السفلي -->
-    <org.mozilla.geckoview.GeckoView
-        android:id="@+id/geckoView"
+    <!-- 1. Web Display Area -->
+    <WebView
+        android:id="@+id/webView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/addressBarLayout"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- 4. Speed Dial (Home Screen) -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvSpeedDial"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:overScrollMode="never"
-        android:padding="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/addressBarLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pulseIndicator"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3" 
-        tools:listitem="@android:layout/simple_list_item_1" />
+        app:layout_constraintBottom_toTopOf="@+id/bottomBar" />
 
-    <!-- 3. Fixed Bottom Address Bar -->
-    <!-- شريط ثابت كلاسيكي بدلاً من العائم -->
+    <!-- 2. Bottom Address Bar -->
     <LinearLayout
-        android:id="@+id/addressBarLayout"
+        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="#1A1A1A"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="#EEEEEE"
+        android:padding="8dp"
+        android:elevation="8dp"
+        app:layout_bottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Secure/Lock Icon -->
-        <ImageView
-            android:id="@+id/ivSecurity"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_lock_lock"
-            app:tint="#E53935"
-            android:layout_marginEnd="8dp"/>
-
-        <!-- AdBlock Shield Icon (New) -->
-        <ImageView
-            android:id="@+id/btnShield"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_lock_idle_lock" 
-            app:tint="#4CAF50" 
-            android:layout_marginEnd="12dp"
-            android:tooltipText="AdBlocker is ON"/> 
-
-        <!-- URL Input -->
         <EditText
-            android:id="@+id/bottomAddressBar"
+            android:id="@+id/etAddress"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:background="@null"
-            android:hint="Search or type URL (Nabdh)"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#80FFFFFF"
-            android:textSize="16sp"
-            android:imeOptions="actionGo"
+            android:background="@android:drawable/edit_text"
+            android:hint="Type URL or Search..."
             android:inputType="textUri"
-            android:maxLines="1" />
-
-        <!-- Tabs/Menu Icon -->
-        <ImageView
-            android:id="@+id/btnTabs"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_sort_by_size"
-            app:tint="#FFFFFF"
-            android:layout_marginStart="12dp"/>
-
+            android:imeOptions="actionGo"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:maxLines="1"
+            android:textSize="16sp" />
+            
+        <ImageButton
+            android:id="@+id/btnGo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_send"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Go" />
+            
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
