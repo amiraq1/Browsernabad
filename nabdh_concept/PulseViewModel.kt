@@ -87,9 +87,38 @@ class PulseViewModel : ViewModel() {
         }
     }
 
+    // === Search Suggestions ===
+    private val _suggestions = MutableStateFlow<List<String>>(emptyList())
+    val suggestions = _suggestions.asStateFlow()
+    
+    // لإلغاء طلبات البحث السابقة إذا كتب المستخدم بسرعة
+    private var searchJob: kotlinx.coroutines.Job? = null
+
+    fun onQueryChanged(query: String) {
+        // إلغاء البحث السابق
+        searchJob?.cancel()
+        
+        if (query.length < 2) {
+            _suggestions.value = emptyList()
+            return
+        }
+
+        searchJob = viewModelScope.launch {
+            delay(300) // Debounce: انتظر 300ms قبل الطلب لتقليل استهلاك الشبكة
+            val results = com.nabdh.browser.data.SearchRepository.getSuggestions(query)
+            _suggestions.emit(results)
+        }
+    }
+
     fun loadUrl(inputUrl: String) {
-        // Basic URL normalization
-        val target = if (inputUrl.contains("://")) inputUrl else "https://$inputUrl"
+        // تنظيف القائمة عند الانتقال
+        _suggestions.value = emptyList()
+
+        val target = if (inputUrl.contains("://")) inputUrl else {
+            // تحسين: إذا كان المدخل ليس رابطاً صريحاً، ابحث عنه في جوجل
+            if (!inputUrl.contains(".")) "https://www.google.com/search?q=$inputUrl" 
+            else "https://$inputUrl"
+        }
         _url.value = target
         _currentSession.value?.loadUri(target)
     }
