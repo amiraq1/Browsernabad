@@ -52,32 +52,36 @@ class PulseViewModel : ViewModel() {
 
     // 3. تحديث دالة تهيئة المحرك
     private fun initializeEngine(isGhostMode: Boolean = false) {
-        // إغلاق الجلسة السابقة إن وجدت لمسح الذاكرة
+        // إغلاق الجلسة السابقة لتنظيف الذاكرة
         _currentSession.value?.close()
 
         val session = GeckoSession()
         
-        // === إعدادات حجب الإعلانات الجديدة ===
+        // === إعدادات حجب الإعلانات ===
         if (_isAdBlockEnabled.value) {
-            // 1. تفعيل الحماية من التتبع (الأساس)
-            session.settings.useTrackingProtection = true
+            // نستدعي المانع الذي أنشأناه ليتولى الحماية وحقن السكربت
+            com.nabdh.browser.core.AdBlocker.enable(session)
             
-            // 2. منع النوافذ المنبثقة (Popups) - ميزة مهمة جداً
+            // السماح بالجافاسكريبت ضروري للمواقع الحديثة حتى مع الحجب
             session.settings.allowJavascript = true 
+        } else {
+            // تعطيل الحجب
+            com.nabdh.browser.core.AdBlocker.disable(session)
         }
 
-        // إعدادات الوضع الشبحي (كما فعلنا سابقاً)
+        // === إعدادات الوضع الشبحي ===
         session.settings.usePrivateMode = isGhostMode 
         
         if (isGhostMode) {
-            // تشديد الحماية في الوضع الشبحي
             session.settings.fullAccessibilityTree = false
+            // في الوضع الشبحي، نزيد الحماية ونلغي حفظ الكوكيز
+            session.settings.useTrackingProtection = true 
         }
 
         session.open(null)
         _currentSession.value = session
         
-        // إعادة تحميل الصفحة الرئيسية أو صفحة فارغة
+        // إعادة تحميل الرابط الحالي
         if (_url.value.isNotEmpty()) {
             session.loadUri(_url.value)
         }
