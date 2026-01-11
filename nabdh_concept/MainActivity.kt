@@ -1,50 +1,53 @@
-package com.nabdh.browser.ui.main
+package com.nabdh.browser
 
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.activity.OnBackPressedCallback
+import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import com.nabdh.browser.R
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private lateinit var urlInput: EditText
+    private lateinit var goButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 1. تعريف WebView
+        // تعريف العناصر
         webView = findViewById(R.id.webView)
+        urlInput = findViewById(R.id.urlInput)
+        goButton = findViewById(R.id.goButton)
 
-        // 2. إعدادات المتصفح (تفعيل JavaScript)
+        // إعدادات المتصفح الأساسية
         webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true // ضروري للمواقع الحديثة مثل فيسبوك وتويتر
+        webView.webViewClient = WebViewClient() // لفتح الروابط داخل التطبيق
 
-        // 3. ضمان فتح الروابط داخل التطبيق
-        webView.webViewClient = object : WebViewClient() {
-            // يمكننا ترك هذا فارغاً، فالافتراضي يفتح الروابط في نفس الـ WebView
-            // ولكن وضعه يضمن عدم فتح كروم الخارجي
-            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                view?.loadUrl(url ?: return false)
-                return true
-            }
-        }
+        // تحميل صفحة Google كبداية
+        webView.loadUrl("https://www.google.com")
 
-        // 4. معالجة زر الرجوع (Back Button)
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack() // العودة للصفحة السابقة
+        // برمجة زر "اذهب"
+        goButton.setOnClickListener {
+            val url = urlInput.text.toString()
+            if (url.isNotEmpty()) {
+                if (url.startsWith("http")) {
+                    webView.loadUrl(url)
                 } else {
-                    isEnabled = false // تعطيل هذا الـ Callback مؤقتاً
-                    onBackPressedDispatcher.onBackPressed() // تنفيذ الخروج الافتراضي من التطبيق
+                    webView.loadUrl("https://www.google.com/search?q=$url")
                 }
             }
-        })
+        }
+    }
 
-        // تحميل صفحة افتراضية (جوجل مثلاً)
-        webView.loadUrl("https://www.google.com")
+    // زر الرجوع في الهاتف يعود للصفحة السابقة في المتصفح
+    override fun onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
     }
 }
