@@ -34,13 +34,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
+    // === GeckoView Engine ===
+    implementation "org.mozilla.geckoview:geckoview-stable:121.0.20240213153646"
+
     // === Coroutines & Lifecycle ===
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
-    implementation "androidx.activity:activity-ktx:1.8.2"
-
-    // === GeckoView Engine ===
-    // IMPORTANT: Make sure to add maven { url "https://maven.mozilla.org/maven2/" } 
-    // to your settings.gradle or project-level build.gradle repositories.
-    implementation "org.mozilla.geckoview:geckoview-stable:121.0.20240213153646" 
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 }
