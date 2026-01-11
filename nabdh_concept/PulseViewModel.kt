@@ -1,7 +1,9 @@
 package com.nabdh.browser.ui.main
 
+import android.app.Application
+import android.content.Context
 import android.net.TrafficStats
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,8 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSessionSettings
 
-class PulseViewModel : ViewModel() {
+class PulseViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentSession = MutableStateFlow<GeckoSession?>(null)
     val currentSession = _currentSession.asStateFlow()
@@ -27,6 +30,9 @@ class PulseViewModel : ViewModel() {
 
     // أضف متغيراً للتحكم في مانع الإعلانات (يمكن ربطه بزر لاحقاً)
     private val _isAdBlockEnabled = MutableStateFlow(true) // مفعل افتراضياً
+
+    // متغير لتخزين حالة الوضع الليلي
+    private var isForceDarkEnabled = false
 
     private var previousRxBytes = 0L
 
@@ -52,29 +58,40 @@ class PulseViewModel : ViewModel() {
 
     // 3. تحديث دالة تهيئة المحرك
     private fun initializeEngine(isGhostMode: Boolean = false) {
-        // إغلاق الجلسة السابقة لتنظيف الذاكرة
         _currentSession.value?.close()
-
         val session = GeckoSession()
-        
+
+        // === تفويض إدارة المحتوى (AdBlock + Downloads) ===
+        val delegate = com.nabdh.browser.core.NabdhContentDelegate(
+            getApplication(), 
+            isAdBlockEnabled = _isAdBlockEnabled.value
+        )
+        session.contentDelegate = delegate
+
         // === إعدادات حجب الإعلانات ===
         if (_isAdBlockEnabled.value) {
-            // نستدعي المانع الذي أنشأناه ليتولى الحماية وحقن السكربت
-            com.nabdh.browser.core.AdBlocker.enable(session)
-            
-            // السماح بالجافاسكريبت ضروري للمواقع الحديثة حتى مع الحجب
-            session.settings.allowJavascript = true 
+            session.settings.useTrackingProtection = true
+            session.settings.allowJavascript = true
         } else {
-            // تعطيل الحجب
-            com.nabdh.browser.core.AdBlocker.disable(session)
+            session.settings.useTrackingProtection = false
         }
 
+        // === الوضع الليلي ===
+        val prefs = getApplication<Application>().getSharedPreferences("NabdhPrefs", Context.MODE_PRIVATE)
+        isForceDarkEnabled = prefs.getBoolean("force_dark_mode", false)
+
+        if (isForceDarkEnabled) {
+             // FORCE_DARK: يجبر الصفحات على التحول
+             session.settings.displayMode = GeckoSessionSettings.DISPLAY_MODE_FORCE_DARK
+        } else {
+             session.settings.displayMode = GeckoSessionSettings.DISPLAY_MODE_NORMAL
+        }
+        
         // === إعدادات الوضع الشبحي ===
         session.settings.usePrivateMode = isGhostMode 
         
         if (isGhostMode) {
             session.settings.fullAccessibilityTree = false
-            // في الوضع الشبحي، نزيد الحماية ونلغي حفظ الكوكيز
             session.settings.useTrackingProtection = true 
         }
 
@@ -85,6 +102,11 @@ class PulseViewModel : ViewModel() {
         if (_url.value.isNotEmpty()) {
             session.loadUri(_url.value)
         }
+    }
+    
+    // دالة لتحديث الإعداد دون إعادة تشغيل التطبيق بالكامل
+    fun refreshSettings() {
+        initializeEngine(isGhostMode = _isGhostMode.value)
     }
 
     // === Search Suggestions ===
@@ -113,12 +135,32 @@ class PulseViewModel : ViewModel() {
     fun loadUrl(inputUrl: String) {
         // تنظيف القائمة عند الانتقال
         _suggestions.value = emptyList()
-
-        val target = if (inputUrl.contains("://")) inputUrl else {
-            // تحسين: إذا كان المدخل ليس رابطاً صريحاً، ابحث عنه في جوجل
-            if (!inputUrl.contains(".")) "https://www.google.com/search?q=$inputUrl" 
-            else "https://$inputUrl"
+        
+        if (inputUrl.isEmpty()) {
+            _url.value = ""
+            // التحقق إذا كان الرابط فارغاً لتحميل الصفحة الرئيسية أو About:blank
+            _currentSession.value?.loadUri("about:blank") 
+            return
         }
+
+        val target = if (inputUrl.contains("://")) {
+             inputUrl
+        } else if (inputUrl.startsWith("www.")) {
+             "https://$inputUrl"
+        } else if (inputUrl.contains(".") && !inputUrl.contains(" ")) {
+             "https://$inputUrl"
+        } else {
+            // استرجاع محرك البحث المفضل من SharedPreferences باستخدام Application Context
+            val prefs = getApplication<Application>().getSharedPreferences("NabdhPrefs", Context.MODE_PRIVATE)
+            val engine = prefs.getString("search_engine", "google")
+            
+            when (engine) {
+                "duckduckgo" -> "https://duckduckgo.com/?q=$inputUrl"
+                "bing" -> "https://www.bing.com/search?q=$inputUrl"
+                else -> "https://www.google.com/search?q=$inputUrl"
+            }
+        }
+        
         _url.value = target
         _currentSession.value?.loadUri(target)
     }

@@ -11,13 +11,13 @@ import com.nabdh.browser.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.collectLatest
 import org.mozilla.geckoview.GeckoRuntime
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BrowserMenuFragment.MenuListener {
 
     // Note: In a real project, ViewBinding is generated from XML.
     // Assuming ActivityMainBinding exists mapping to activity_main.xml
     private lateinit var binding: ActivityMainBinding
     private val viewModel: PulseViewModel by viewModels()
-    private lateinit var geckoRuntime: GeckoRuntime
+    private val geckoRuntime by lazy { GeckoRuntime.create(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +32,12 @@ class MainActivity : AppCompatActivity() {
         setupEngine()
         setupUI()
         observePulse()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // إعادة تحميل الإعدادات عند العودة من شاشة Settings
+        viewModel.refreshSettings() 
     }
 
     private fun setupEngine() {
@@ -66,19 +72,76 @@ class MainActivity : AppCompatActivity() {
         binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
 
         binding.btnShield.setOnClickListener {
-            val isActive = binding.btnShield.alpha == 1.0f
+            // ... (نفس الكود السابق)
+             val isActive = binding.btnShield.alpha == 1.0f
             if (isActive) {
-                binding.btnShield.alpha = 0.3f // باهت يعني مغلق
+                binding.btnShield.alpha = 0.3f
                 binding.btnShield.setColorFilter(android.graphics.Color.GRAY)
                 android.widget.Toast.makeText(this, "AdBlocker OFF ⚠️", android.widget.Toast.LENGTH_SHORT).show()
                 viewModel.toggleAdBlock(false)
             } else {
                 binding.btnShield.alpha = 1.0f
-                binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50")) // أخضر
+                binding.btnShield.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
                 android.widget.Toast.makeText(this, "AdBlocker ON 🛡️", android.widget.Toast.LENGTH_SHORT).show()
                 viewModel.toggleAdBlock(true)
             }
         }
+        
+        // === إعداد Speed Dial (صفحة البداية) ===
+        val speedDialAdapter = SpeedDialAdapter { url ->
+            // عند الضغط على أيقونة:
+            binding.bottomAddressBar.setText(url) // اكتب الرابط
+            viewModel.loadUrl(url) // حمله
+        }
+        
+        binding.rvSpeedDial.adapter = speedDialAdapter
+        // تحديد عدد الأعمدة (للتأكيد، رغم وجوده في XML)
+        binding.rvSpeedDial.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
+        // ربط زر القائمة لفتح الـ Bottom Sheet
+        binding.ivMenu.setOnClickListener {
+            val menuFragment = BrowserMenuFragment()
+            menuFragment.listener = this // ربط هذا الـ Activity كمستمع
+            menuFragment.show(supportFragmentManager, "BrowserMenu")
+        }
+    }
+
+    // تم حذف showMenu() لأننا نستخدم الفرامنت مباشرة الآن
+
+    // === تنفيذ أوامر القائمة (Menu Implementation) ===
+
+    override fun onBackClicked() {
+        viewModel.currentSession.value?.let { session ->
+            session.goBack()
+        }
+    }
+
+    override fun onForwardClicked() {
+        viewModel.currentSession.value?.goForward()
+    }
+
+    override fun onReloadClicked() {
+        viewModel.currentSession.value?.reload()
+    }
+    
+    override fun onHomeClicked() {
+        // العودة لصفحة البداية (Speed Dial)
+        viewModel.loadUrl("") 
+    }
+
+    override fun onShareClicked() {
+        val currentUrl = viewModel.url.value
+        if (currentUrl.isNotEmpty()) {
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(android.content.Intent.EXTRA_TEXT, currentUrl)
+            }
+            startActivity(android.content.Intent.createChooser(intent, "Share Link via"))
+        }
+    }
+    
+    override fun onSettingsClicked() {
+        val intent = android.content.Intent(this, com.nabdh.browser.ui.main.SettingsActivity::class.java)
+        startActivity(intent)
     }
 
     private fun observePulse() {
@@ -109,24 +172,33 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             viewModel.isGhostMode.collectLatest { isGhost ->
                 if (isGhost) {
-                    // تفعيل الألوان الجليدية
-                    binding.pulseIndicator.setPulseColor("#00FFFF") // سماوي مشع (Ice Blue)
+                    binding.pulseIndicator.setPulseColor("#00FFFF") 
                     binding.ivSecurity.setColorFilter(android.graphics.Color.parseColor("#00FFFF"))
-                    
-                    // خلفية أغمق قليلاً للبار عند الشبح (برمجياً لتجنب فقدان Drawable)
                     binding.addressBarLayout.setBackgroundColor(android.graphics.Color.parseColor("#0D0D0D"))
-
-                    // رسالة تأكيد للمستخدم
                     android.widget.Toast.makeText(this@MainActivity, "Ghost Mode Active 👻", android.widget.Toast.LENGTH_SHORT).show()
                 } else {
-                    // العودة للأحمر النبضي
                     binding.pulseIndicator.setPulseColor("#E53935")
                     binding.ivSecurity.setColorFilter(android.graphics.Color.parseColor("#E53935"))
-                    
-                    // استعادة لون الخلفية الأصلي
                     binding.addressBarLayout.setBackgroundColor(android.graphics.Color.parseColor("#1A1A1A"))
-
                     android.widget.Toast.makeText(this@MainActivity, "Standard Mode", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        // === مراقبة الرابط لإخفاء/إظهار صفحة البداية ===
+        lifecycleScope.launchWhenStarted {
+            viewModel.url.collectLatest { currentUrl ->
+                if (currentUrl.isEmpty()) {
+                    // نحن في صفحة البداية
+                    binding.rvSpeedDial.visibility = android.view.View.VISIBLE
+                    binding.rvSpeedDial.alpha = 0f
+                    binding.rvSpeedDial.animate().alpha(1f).setDuration(500).start()
+                    
+                    binding.geckoView.visibility = android.view.View.INVISIBLE
+                } else {
+                    // تم تحميل صفحة
+                    binding.rvSpeedDial.visibility = android.view.View.GONE
+                    binding.geckoView.visibility = android.view.View.VISIBLE
                 }
             }
         }

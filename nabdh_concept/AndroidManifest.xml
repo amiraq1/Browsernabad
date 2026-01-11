@@ -10,6 +10,9 @@
     <!-- Optional Location Permissions for Web Content -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Download Permission (Max SDK 28 as newer versions use Scoped Storage) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
         android:name=".NabdhApp"
@@ -33,6 +36,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Settings Activity -->
+        <activity 
+            android:name=".ui.main.SettingsActivity"
+            android:parentActivityName=".ui.main.MainActivity" />
 
     </application>
 
