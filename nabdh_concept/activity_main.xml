@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- 1. The Pulse Indicator (Overlay on top) -->
+    <!-- يظهر كمؤشر حيوي فوق المحتوى في الجزء العلوي -->
+    <com.nabdh.browser.ui.components.PulseIndicatorView
+        android:id="@+id/pulseIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@android:color/transparent"
+        android:elevation="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 2. The Browser Engine (GeckoView) -->
+    <!-- محصور بين أعلى الشاشة وشريط العناوين السفلي -->
+    <org.mozilla.geckoview.GeckoView
+        android:id="@+id/geckoView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/addressBarLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 3. Fixed Bottom Address Bar -->
+    <!-- شريط ثابت كلاسيكي بدلاً من العائم -->
+    <LinearLayout
+        android:id="@+id/addressBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#1A1A1A"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Secure/Lock Icon -->
+        <ImageView
+            android:id="@+id/ivSecurity"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_lock_lock"
+            app:tint="#E53935"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- AdBlock Shield Icon (New) -->
+        <ImageView
+            android:id="@+id/btnShield"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_lock_idle_lock" 
+            app:tint="#4CAF50" 
+            android:layout_marginEnd="12dp"
+            android:tooltipText="AdBlocker is ON"/> 
+
+        <!-- URL Input -->
+        <EditText
+            android:id="@+id/bottomAddressBar"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="Search or type URL (Nabdh)"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#80FFFFFF"
+            android:textSize="16sp"
+            android:imeOptions="actionGo"
+            android:inputType="textUri"
+            android:maxLines="1" />
+
+        <!-- Tabs/Menu Icon -->
+        <ImageView
+            android:id="@+id/btnTabs"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            app:tint="#FFFFFF"
+            android:layout_marginStart="12dp"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

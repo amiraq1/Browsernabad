@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.NabdhBrowser" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- الألوان الأساسية: أسود ورمادي داكن للتركيز على المحتوى -->
+        <item name="colorPrimary">#E53935</item> <!-- لون النبض الأحمر -->
+        <item name="colorPrimaryVariant">#D32F2F</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        
+        <!-- الخلفية سوداء تماماً لتقليل استهلاك الطاقة في شاشات OLED -->
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:colorBackground">#000000</item>
+        
+        <!-- Status Bar شفاف -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+                
+        <!-- الخطوط -->
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+</resources>
