@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
                 if (url.startsWith("http")) {
                     webView.loadUrl(url)
                 } else {
+                    // إذا لم يكتب http نعتبره بحث في جوجل
                     webView.loadUrl("https://www.google.com/search?q=$url")
                 }
             }
