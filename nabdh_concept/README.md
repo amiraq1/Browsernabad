@@ -1,97 +1,209 @@
-# Nabdh Browser (نبض) - Concept & Source Code
+# 🔴 نبض - متصفح عربي عصري
 
-This repository contains the core source code for **Nabdh Browser**, an avant-garde, privacy-focused Android browser powered by Mozilla's GeckoView engine.
+<div align="center">
 
-## 🚀 Features
+![Version](https://img.shields.io/badge/version-1.0.0-E53935?style=for-the-badge)
+![Platform](https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android)
+![Min SDK](https://img.shields.io/badge/minSdk-24-blue?style=for-the-badge)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9-7F52FF?style=for-the-badge&logo=kotlin)
 
-*   **GeckoView Engine**: Powered by the same engine as Firefox for robust web compatibility and security.
-*   **Pulse UI**: A living, breathing interface with a dynamic "heartbeat" indicator that reacts to network traffic.
-*   **Ghost Mode**: Hardened privacy mode (no cookies, enhanced tracking protection, distinct UI theme).
-*   **AdBlocker & Cosmetic Filtering**: Built-in protection against ads and trackers using custom JS injection.
-*   **Dark Mode Enforcer**: Force dark mode on any website via GeckoView settings.
-*   **File Downloads**: Integrated download manager support.
-*   **Speed Dial**: Quick access to favorite sites.
+**متصفح ويب خفيف وأنيق مصمم للمستخدم العربي**
 
-## 🛠️ Project Structure & Setup
-
-To build this project, create a new **Android Studio** project (Kotlin) and arrange the provided files as follows:
-
-### 1. Package Structure (`app/src/main/java/`)
-
-Ensure your package name is `com.nabdh.browser`.
-
-*   `NabdhApp.kt` -> Root application class.
-*   `core/`
-    *   `NabdhContentDelegate.kt` -> Handles downloads and ad-blocking script injection.
-    *   `AdBlocker.kt` (Legacy, replaced by ContentDelegate but useful for reference).
-*   `data/`
-    *   `SearchRepository.kt` -> Handles search suggestions logic.
-*   `ui/`
-    *   `main/`
-        *   `MainActivity.kt` -> The browser window.
-        *   `SettingsActivity.kt` -> User preferences.
-        *   `PulseViewModel.kt` -> The brain (MVVM) managing the engine state.
-        *   `BrowserMenuFragment.kt` -> Bottom sheet menu.
-        *   `SpeedDialAdapter.kt` -> RecyclerView adapter for start page.
-    *   `components/`
-        *   `PulseIndicatorView.kt` -> The custom heartbeat view.
-
-### 2. Resources (`app/src/main/res/`)
-
-*   `layout/`
-    *   `activity_main.xml`
-    *   `activity_settings.xml`
-    *   `layout_menu_bottom_sheet.xml`
-*   `drawable/`
-    *   `bg_search_bar.xml`
-    *   `progress_drawable.xml`
-*   `values/`
-    *   `themes.xml` (Define `Theme.NabdhBrowser` here).
-
-### 3. Manifest (`AndroidManifest.xml`)
-
-Ensure you include the permissions (`INTERNET`, `WRITE_EXTERNAL_STORAGE`) and register the Activities.
-
-## 📦 Dependencies (`build.gradle`)
-
-Add the following to your module-level `build.gradle`:
-
-```groovy
-dependencies {
-    // Core Android
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-
-    // GeckoView (The Engine)
-    implementation "org.mozilla.geckoview:geckoview-stable:121.0.20240213153646"
-
-    // Coroutines & Lifecycle
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
-}
-```
-
-**IMPORTANT**: You must add the Mozilla Maven repository to your `settings.gradle`:
-
-```groovy
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://maven.mozilla.org/maven2/" }
-    }
-}
-```
-
-## 📱 How to Run
-
-1.  Open the project in Android Studio.
-2.  Sync Gradle files.
-3.  Connect a device or Emulator.
-4.  Run `MainActivity`.
+</div>
 
 ---
-*Built with ❤️ by Antigravity & You.*
+
+## ✨ المميزات
+
+| الميزة | الوصف |
+|--------|-------|
+| 🎨 **تصميم داكن صرف** | أسود OLED لتوفير الطاقة |
+| ⚡ **خفيف وسريع** | مبني على WebView لأداء مثالي |
+| 🔒 **آمن** | تعطيل الوصول للملفات والمحتوى المختلط |
+| 📱 **شريط سفلي** | تنقل سهل بإبهام واحد |
+| 🌐 **ذكي** | يميز بين URLs والبحث تلقائياً |
+| ♿ **وصول شامل** | دعم كامل لقارئات الشاشة |
+
+---
+
+## 🏗️ هيكل المشروع
+
+```
+nabdh_concept/
+├── 📄 build.gradle                 # Gradle المشروع الرئيسي
+├── 📄 settings.gradle              # إعدادات Gradle
+├── 📄 gradle.properties            # خصائص Gradle
+├── 📄 .gitignore                   # Git ignore
+├── 📁 gradle/wrapper/              # Gradle wrapper
+│
+└── 📁 app/                         # وحدة التطبيق
+    ├── 📄 build.gradle             # Gradle التطبيق
+    ├── 📄 proguard-rules.pro       # قواعد ProGuard
+    │
+    └── 📁 src/main/
+        ├── 📄 AndroidManifest.xml  # إعدادات التطبيق
+        │
+        ├── 📁 java/com/nabdh/browser/
+        │   ├── 📄 MainActivity.kt  # النشاط الرئيسي
+        │   └── 📄 NabdhApp.kt      # Application class
+        │
+        └── 📁 res/
+            ├── 📁 layout/
+            │   └── activity_main.xml
+            │
+            ├── 📁 drawable/
+            │   ├── ic_arrow_back.xml
+            │   ├── ic_arrow_forward.xml
+            │   ├── ic_refresh.xml
+            │   ├── ic_close.xml
+            │   ├── ic_lock.xml
+            │   ├── ic_more_vert.xml
+            │   ├── url_bar_background.xml
+            │   └── pulse_circle.xml
+            │
+            └── 📁 values/
+                ├── colors.xml
+                ├── strings.xml
+                ├── dimens.xml
+                └── themes.xml
+```
+
+---
+
+## 🎨 نظام التصميم
+
+### الألوان
+
+| اللون | الكود | الاستخدام |
+|-------|-------|----------|
+| 🔴 الأحمر النبضي | `#E53935` | اللون الأساسي، التفاعلات |
+| 🟦 السيان الشبحي | `#00E5FF` | اللون الثانوي |
+| ⬛ الأسود العميق | `#0A0A0A` | الخلفية الرئيسية |
+| 🟫 السطح | `#141414` | البطاقات والأشرطة |
+| 🟢 الأخضر الآمن | `#4CAF50` | HTTPS indicator |
+
+### نظام المسافات (8dp Grid)
+
+```
+spacing_xs  = 4dp
+spacing_sm  = 8dp
+spacing_md  = 16dp
+spacing_lg  = 24dp
+spacing_xl  = 32dp
+spacing_xxl = 48dp
+```
+
+---
+
+## 🔧 البناء والتشغيل
+
+### المتطلبات
+
+- Android Studio Hedgehog | 2023.1.1+
+- JDK 17
+- Android SDK 34
+- Gradle 8.2
+
+### خطوات البناء
+
+```bash
+# 1. استنساخ المشروع
+git clone <repository-url>
+cd nabdh_concept
+
+# 2. فتح في Android Studio
+# File > Open > اختر مجلد nabdh_concept
+
+# 3. Sync Gradle
+# سيتم تلقائياً أو اضغط "Sync Now"
+
+# 4. تشغيل
+# اختر جهاز/محاكي > Run 'app'
+```
+
+### بناء APK
+
+```bash
+# Debug
+./gradlew assembleDebug
+# Output: app/build/outputs/apk/debug/app-debug.apk
+
+# Release (يتطلب signing config)
+./gradlew assembleRelease
+# Output: app/build/outputs/apk/release/app-release.apk
+```
+
+---
+
+## 🛡️ الأمان
+
+| الإعداد | القيمة | السبب |
+|---------|--------|-------|
+| `allowFileAccess` | `false` | منع الوصول للملفات المحلية |
+| `allowContentAccess` | `false` | منع الوصول لـ content:// URIs |
+| `mixedContentMode` | `NEVER_ALLOW` | رفض HTTP في صفحات HTTPS |
+| `usesCleartextTraffic` | `false` | رفض HTTP غير مشفر |
+
+---
+
+## ♿ سهولة الوصول (Accessibility)
+
+- ✅ `contentDescription` لجميع الأزرار التفاعلية
+- ✅ نسب تباين ألوان تتوافق مع WCAG AA
+- ✅ دعم التنقل بلوحة المفاتيح
+- ✅ حالات focus واضحة بصرياً
+- ✅ دعم RTL كامل
+
+---
+
+## 📱 معاينة التصميم
+
+```
+┌─────────────────────────────────┐
+│ ════════════════════════ 65%   │  ← شريط التقدم (2dp)
+├─────────────────────────────────┤
+│                                 │
+│                                 │
+│          المحتوى               │
+│         (WebView)              │
+│                                 │
+│                                 │
+├─────────────────────────────────┤
+│ ← → 🔒 [google.com      ] ⟳ ⋮ │  ← شريط التنقل السفلي
+└─────────────────────────────────┘
+```
+
+---
+
+## 🔮 خارطة الطريق
+
+### v1.x - التأسيس
+- [x] واجهة المتصفح الأساسية
+- [x] معالجة URL ذكية
+- [x] شريط تقدم نبضي
+- [x] معالجة الأخطاء
+
+### v2.x - التوسع
+- [ ] التبويبات المتعددة
+- [ ] الإشارات المرجعية
+- [ ] سجل التصفح
+- [ ] التنزيلات
+
+### v3.x - الخصوصية
+- [ ] وضع التصفح الخاص (الشبح)
+- [ ] حجب الإعلانات
+- [ ] حجب التتبع
+
+---
+
+## 📄 الترخيص
+
+MIT License - انظر ملف `LICENSE` للتفاصيل.
+
+---
+
+<div align="center">
+
+**صُنع بـ ❤️ للمستخدم العربي**
+
+</div>

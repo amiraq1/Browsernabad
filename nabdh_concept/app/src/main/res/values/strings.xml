@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         موارد السلاسل النصية - نبض
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="app_name">نبض</string>
+    <string name="app_name_full">متصفح نبض</string>
+    
+    <!-- شريط URL -->
+    <string name="url_hint">ابحث أو أدخل عنوان URL</string>
+    <string name="url_content_description">حقل إدخال عنوان الموقع أو نص البحث</string>
+    
+    <!-- أزرار التنقل -->
+    <string name="btn_back">الرجوع للصفحة السابقة</string>
+    <string name="btn_forward">الانتقال للصفحة التالية</string>
+    <string name="btn_refresh">تحديث الصفحة</string>
+    <string name="btn_stop">إيقاف التحميل</string>
+    <string name="btn_menu">فتح القائمة الإضافية</string>
+    
+    <!-- حالات التحميل -->
+    <string name="loading">جاري التحميل…</string>
+    
+    <!-- رسائل الخطأ -->
+    <string name="error_connection">تعذر الاتصال</string>
+    <string name="error_connection_message">تحقق من اتصالك بالإنترنت وحاول مرة أخرى</string>
+    <string name="error_not_found">الموقع غير موجود</string>
+    <string name="error_not_found_message">تحقق من كتابة العنوان بشكل صحيح</string>
+    <string name="error_bad_url">رابط غير صالح</string>
+    <string name="error_bad_url_message">العنوان المُدخل غير صحيح</string>
+    <string name="error_generic">حدث خطأ</string>
+    <string name="error_generic_message">حاول مرة أخرى لاحقاً</string>
+    <string name="btn_retry">إعادة المحاولة</string>
+    
+    <!-- القائمة -->
+    <string name="menu_new_tab">صفحة جديدة</string>
+    <string name="menu_bookmarks">الإشارات المرجعية</string>
+    <string name="menu_history">السجل</string>
+    <string name="menu_downloads">التنزيلات</string>
+    <string name="menu_settings">الإعدادات</string>
+    
+    <!-- رسائل عامة -->
+    <string name="no_app_to_open">لا يوجد تطبيق لفتح هذا الرابط</string>
+    
+</resources>

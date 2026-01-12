@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    
+    <!-- تدرج شعاعي من الأحمر النبضي -->
+    <gradient
+        android:type="radial"
+        android:gradientRadius="24dp"
+        android:centerColor="@color/pulse_red"
+        android:startColor="@color/pulse_red"
+        android:endColor="#80E53935" />
+    
+    <size
+        android:width="48dp"
+        android:height="48dp" />
+    
+</shape>

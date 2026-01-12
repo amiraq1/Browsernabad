@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         الألوان - لوحة نبض
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <!-- الألوان الأساسية -->
+    <color name="pulse_red">#E53935</color>
+    <color name="pulse_red_dark">#B71C1C</color>
+    <color name="pulse_red_light">#FF6F60</color>
+    
+    <!-- الألوان الثانوية -->
+    <color name="ghost_cyan">#00E5FF</color>
+    <color name="ghost_cyan_dark">#00B8D4</color>
+    
+    <!-- ألوان النجاح والتحذير -->
+    <color name="secure_green">#4CAF50</color>
+    <color name="warning_amber">#FFC107</color>
+    <color name="error_red">#FF5252</color>
+    
+    <!-- درجات الأسود والرمادي -->
+    <color name="black_pure">#000000</color>
+    <color name="black_deep">#0A0A0A</color>
+    <color name="surface">#141414</color>
+    <color name="surface_variant">#1A1A1A</color>
+    <color name="surface_elevated">#222222</color>
+    <color name="border_subtle">#2A2A2A</color>
+    
+    <!-- درجات النص -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_disabled">#666666</color>
+    <color name="text_hint">#555555</color>
+    
+    <!-- شفافيات -->
+    <color name="overlay_dark">#CC0A0A0A</color>
+    <color name="overlay_light">#33FFFFFF</color>
+    
+</resources>

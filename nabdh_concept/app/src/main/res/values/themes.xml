@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ثيم نبض الرئيسي - تصميم داكن عصري
+         ═══════════════════════════════════════════════════════════════ -->
+    <style name="Theme.NabdhBrowser" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
+        <!-- ─────────────────────────────────────────────────────────────
+             الألوان الأساسية
+             ───────────────────────────────────────────────────────────── -->
+        
+        <!-- الأحمر النبضي - اللون المميز للعلامة التجارية -->
+        <item name="colorPrimary">@color/pulse_red</item>
+        <item name="colorPrimaryVariant">@color/pulse_red_dark</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        
+        <!-- السيان - اللون الثانوي للتفاعلات -->
+        <item name="colorSecondary">@color/ghost_cyan</item>
+        <item name="colorSecondaryVariant">@color/ghost_cyan_dark</item>
+        <item name="colorOnSecondary">@color/black_pure</item>
+        
+        <!-- ألوان السطح -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- ─────────────────────────────────────────────────────────────
+             الخلفيات
+             ───────────────────────────────────────────────────────────── -->
+        
+        <!-- أسود حقيقي لتوفير الطاقة في OLED -->
+        <item name="android:windowBackground">@color/black_deep</item>
+        <item name="android:colorBackground">@color/black_deep</item>
+        
+        <!-- ─────────────────────────────────────────────────────────────
+             أشرطة النظام - شفافة للانغماس الكامل
+             ───────────────────────────────────────────────────────────── -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        
+        <!-- ─────────────────────────────────────────────────────────────
+             الطباعة
+             ───────────────────────────────────────────────────────────── -->
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_disabled</item>
+        
+        <!-- ─────────────────────────────────────────────────────────────
+             تخصيصات المكونات
+             ───────────────────────────────────────────────────────────── -->
+        
+        <!-- الأزرار -->
+        <item name="materialButtonStyle">@style/Widget.Nabdh.Button.Primary</item>
+        
+    </style>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         أنماط المكونات
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <!-- نمط الأزرار الأساسي -->
+    <style name="Widget.Nabdh.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="backgroundTint">@color/pulse_red</item>
+        <item name="cornerRadius">@dimen/corner_radius_xl</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    
+    <!-- نمط الأزرار الشبحية -->
+    <style name="Widget.Nabdh.Button.Ghost" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/ghost_cyan</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="rippleColor">#3300E5FF</item>
+    </style>
+    
+</resources>
