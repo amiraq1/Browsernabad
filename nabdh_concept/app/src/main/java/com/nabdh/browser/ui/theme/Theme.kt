@@ -1,8 +1,6 @@
 package com.nabdh.browser.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
@@ -11,39 +9,39 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// تعريف مخطط الألوان الداكن فقط
 private val DarkColorScheme = darkColorScheme(
     primary = NabdhPulseRed,
     secondary = NabdhCyan,
-    tertiary = SecureGreen,
     background = NabdhBlack,
     surface = NabdhSurface,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onTertiary = Color.White,
+    onPrimary = TextPrimary,
     onBackground = TextPrimary,
-    onSurface = TextPrimary,
-    error = ErrorRed
+    onSurface = TextPrimary
 )
 
 @Composable
-fun NabdhTheme(
+fun NabdhBrowserTheme(
     content: @Composable () -> Unit
 ) {
-    // We enforce Dark Mode. Avant-Garde UI doesn't do "Light Mode" for this concept.
     val colorScheme = DarkColorScheme
     val view = LocalView.current
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            // جعل شريط الحالة يندمج مع الخلفية
             window.statusBarColor = NabdhBlack.toArgb()
-            window.navigationBarColor = NabdhBlack.toArgb()
+            window.navigationBarColor = NabdhSurface.toArgb()
+            
+            // إجبار الأيقونات على أن تكون فاتحة
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = NabdhTypography,
+        typography = NabdhTypography, // استخدام الطباعة المخصصة المعرفة سابقاً
         content = content
     )
 }
