@@ -1,34 +1,16 @@
-// NabdhExtractor Content Script
-// يستخرج النص الأساسي من الصفحة للتلخيص بواسطة الذكاء الاصطناعي
+// الاستماع لرسائل من تطبيق أندرويد (سنقوم بتفعيل هذا الاتصال لاحقاً)
+console.log("Nabdh Extractor is running...");
 
-(function () {
-    function extractContent() {
-        // خوارزمية بسيطة لاستخراج النص
-        // (للنسخة القادمة: سأستخدم Readability.js للحصول على "المحتوى الصافي" فقط)
-        const content = document.body.innerText || "";
+// دالة استخراج النص (جاهزة للاستدعاء)
+function extractPageContent() {
+    // 1. إزالة العناصر المشتتة
+    const clones = document.body.cloneNode(true);
+    const distractions = clones.querySelectorAll('nav, footer, script, style, iframe, .ad, .advertisement');
+    distractions.forEach(el => el.remove());
 
-        return {
-            title: document.title,
-            url: window.location.href,
-            // استخراج أول 50 ألف حرف لتجنب إغراق الذاكرة
-            text: content.substring(0, 50000).replace(/\s+/g, ' ').trim()
-        };
-    }
+    // 2. استخراج النص الصافي
+    let text = clones.innerText || "";
 
-    // الاستماع لرسائل من التطبيق (GeckoView)
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        // التحقق من نوع الرسالة (مطابق لما هو في BrowserViewModel)
-        if (message.type === "EXTRACT_CONTENT") {
-            try {
-                const data = extractContent();
-                sendResponse(data);
-            } catch (e) {
-                sendResponse({ error: e.toString() });
-            }
-        }
-        // إرجاع true يشير إلى أن الرد سيكون غير متزامن (Asynchronous) - ممارسة جيدة
-        return true;
-    });
-
-    console.log("NabdhExtractor loaded and ready.");
-})();
+    // 3. تنظيف الفراغات الزائدة
+    return text.replace(/\s+/g, ' ').trim().substring(0, 5000);
+}
