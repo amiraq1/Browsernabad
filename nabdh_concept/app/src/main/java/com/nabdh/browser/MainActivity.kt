@@ -1,398 +1,228 @@
 package com.nabdh.browser
 
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.view.KeyEvent
-import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.inputmethod.EditorInfo
-import android.webkit.*
-import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
-import com.google.android.material.bottomappbar.BottomAppBar
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import com.nabdh.browser.ui.theme.NabdhTheme
+import org.mozilla.geckoview.GeckoRuntime
+import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoView
 
-class MainActivity : AppCompatActivity() {
-
-    // العناصر الرئيسية
-    private lateinit var webView: WebView
-    private lateinit var urlInput: EditText
-    private lateinit var progressBar: ProgressBar
-    private lateinit var bottomAppBar: BottomAppBar
-    
-    // أزرار التنقل
-    private lateinit var btnBack: ImageButton
-    private lateinit var btnForward: ImageButton
-    private lateinit var btnRefresh: ImageButton
-    private lateinit var btnMenu: ImageButton
-    
-    // طبقات الحالة
-    private lateinit var loadingOverlay: FrameLayout
-    private lateinit var errorContainer: LinearLayout
-    private lateinit var retryButton: Button
-    private lateinit var pulseIndicator: View
-    
-    // حالة التحميل
-    private var isLoading = false
-    private var currentUrl: String = ""
-    private var pulseAnimator: ObjectAnimator? = null
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         
-        initViews()
-        setupWebView()
-        setupListeners()
-        startPulseAnimation()
-        
-        // تحميل الصفحة الرئيسية
-        loadUrl("https://www.google.com")
-    }
+        // Edge-to-edge layout
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-    private fun initViews() {
-        webView = findViewById(R.id.webView)
-        urlInput = findViewById(R.id.urlInput)
-        progressBar = findViewById(R.id.progressBar)
-        bottomAppBar = findViewById(R.id.bottomAppBar)
-        
-        btnBack = findViewById(R.id.btnBack)
-        btnForward = findViewById(R.id.btnForward)
-        btnRefresh = findViewById(R.id.btnRefresh)
-        btnMenu = findViewById(R.id.btnMenu)
-        
-        loadingOverlay = findViewById(R.id.loadingOverlay)
-        errorContainer = findViewById(R.id.errorContainer)
-        retryButton = findViewById(R.id.retryButton)
-        pulseIndicator = findViewById(R.id.pulseIndicator)
-    }
+        val runtime = GeckoRuntime.create(this)
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView() {
-        webView.settings.apply {
-            // الأساسيات
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            databaseEnabled = true
-            
-            // الأداء
-            cacheMode = WebSettings.LOAD_DEFAULT
-            setRenderPriority(WebSettings.RenderPriority.HIGH)
-            
-            // الأمان
-            allowFileAccess = false
-            allowContentAccess = false
-            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            
-            // تجربة المستخدم
-            useWideViewPort = true
-            loadWithOverviewMode = true
-            builtInZoomControls = true
-            displayZoomControls = false
-            setSupportZoom(true)
-            
-            // الوضع الداكن (Android 13+)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                isAlgorithmicDarkeningAllowed = true
-            }
-        }
-
-        webView.webViewClient = NabdhWebViewClient()
-        webView.webChromeClient = NabdhChromeClient()
-    }
-
-    private fun setupListeners() {
-        // IME Action - عند الضغط على "اذهب" في لوحة المفاتيح
-        urlInput.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_GO || 
-                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
-                processUrlInput(urlInput.text.toString())
-                hideKeyboard()
-                true
-            } else false
-        }
-
-        // أزرار التنقل
-        btnBack.setOnClickListener { 
-            if (webView.canGoBack()) webView.goBack() 
-        }
-        
-        btnForward.setOnClickListener { 
-            if (webView.canGoForward()) webView.goForward() 
-        }
-        
-        btnRefresh.setOnClickListener {
-            if (isLoading) {
-                webView.stopLoading()
-            } else {
-                webView.reload()
-            }
-        }
-        
-        btnMenu.setOnClickListener {
-            showOptionsMenu()
-        }
-        
-        // زر إعادة المحاولة
-        retryButton.setOnClickListener {
-            errorContainer.visibility = View.GONE
-            webView.reload()
-        }
-
-        // تحديث شريط URL عند التركيز
-        urlInput.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                urlInput.setText(currentUrl)
-                urlInput.selectAll()
-            } else {
-                updateUrlDisplay(currentUrl)
-            }
+        setContent {
+            BrowserScreen(runtime)
         }
     }
+}
 
-    /**
-     * معالجة ذكية للمدخلات - يميز بين URL والبحث
-     */
-    private fun processUrlInput(input: String) {
-        val trimmed = input.trim()
-        
-        when {
-            trimmed.isEmpty() -> return
-            
-            // URL كامل
-            URLUtil.isValidUrl(trimmed) -> loadUrl(trimmed)
-            
-            // يبدو كدومين (يحتوي نقطة ولا مسافات)
-            trimmed.contains(".") && !trimmed.contains(" ") -> {
-                val url = if (trimmed.startsWith("http")) trimmed else "https://$trimmed"
-                loadUrl(url)
-            }
-            
-            // بحث Google
-            else -> {
-                val searchQuery = Uri.encode(trimmed)
-                loadUrl("https://www.google.com/search?q=$searchQuery")
-            }
-        }
-    }
-
-    private fun loadUrl(url: String) {
-        currentUrl = url
-        webView.loadUrl(url)
-    }
-
-    private fun updateUrlDisplay(url: String) {
-        // عرض الدومين فقط للاختصار
-        try {
-            val uri = Uri.parse(url)
-            val host = uri.host ?: url
-            urlInput.setText(host.removePrefix("www."))
-        } catch (e: Exception) {
-            urlInput.setText(url)
-        }
-    }
-
-    private fun updateNavigationButtons() {
-        btnBack.isEnabled = webView.canGoBack()
-        btnBack.alpha = if (webView.canGoBack()) 1f else 0.3f
-        
-        btnForward.isEnabled = webView.canGoForward()
-        btnForward.alpha = if (webView.canGoForward()) 1f else 0.3f
-    }
-
-    private fun updateRefreshButton(loading: Boolean) {
-        isLoading = loading
-        btnRefresh.setImageResource(
-            if (loading) R.drawable.ic_close else R.drawable.ic_refresh
-        )
-        btnRefresh.contentDescription = if (loading) 
-            getString(R.string.btn_stop) else getString(R.string.btn_refresh)
-    }
-
-    private fun startPulseAnimation() {
-        val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.3f, 1f)
-        val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.3f, 1f)
-        val alpha = PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0.6f, 1f)
-        
-        pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(pulseIndicator, scaleX, scaleY, alpha).apply {
-            duration = 1200
-            repeatCount = ObjectAnimator.INFINITE
-            interpolator = AccelerateDecelerateInterpolator()
-        }
-    }
-
-    private fun showLoading(show: Boolean) {
-        loadingOverlay.isVisible = show
-        if (show) {
-            pulseAnimator?.start()
-        } else {
-            pulseAnimator?.cancel()
-        }
-    }
-
-    private fun showError(errorCode: Int, description: String?) {
-        errorContainer.visibility = View.VISIBLE
-        webView.visibility = View.INVISIBLE
-        
-        val errorTitle = findViewById<TextView>(R.id.errorTitle)
-        val errorMessage = findViewById<TextView>(R.id.errorMessage)
-        
-        when (errorCode) {
-            WebViewClient.ERROR_HOST_LOOKUP -> {
-                errorTitle.text = getString(R.string.error_not_found)
-                errorMessage.text = getString(R.string.error_not_found_message)
-            }
-            WebViewClient.ERROR_CONNECT, WebViewClient.ERROR_TIMEOUT -> {
-                errorTitle.text = getString(R.string.error_connection)
-                errorMessage.text = getString(R.string.error_connection_message)
-            }
-            WebViewClient.ERROR_BAD_URL -> {
-                errorTitle.text = getString(R.string.error_bad_url)
-                errorMessage.text = getString(R.string.error_bad_url_message)
-            }
-            else -> {
-                errorTitle.text = getString(R.string.error_generic)
-                errorMessage.text = description ?: getString(R.string.error_generic_message)
-            }
-        }
-    }
-
-    private fun hideError() {
-        errorContainer.visibility = View.GONE
-        webView.visibility = View.VISIBLE
-    }
-
-    private fun showOptionsMenu() {
-        val popup = PopupMenu(this, btnMenu)
-        popup.menu.apply {
-            add(getString(R.string.menu_new_tab))
-            add(getString(R.string.menu_bookmarks))
-            add(getString(R.string.menu_history))
-            add(getString(R.string.menu_downloads))
-            add(getString(R.string.menu_settings))
-        }
-        popup.show()
-    }
-
-    private fun hideKeyboard() {
-        urlInput.clearFocus()
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.hideSoftInputFromWindow(urlInput.windowToken, 0)
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // WebViewClient - معالجة أحداث التنقل
-    // ═══════════════════════════════════════════════════════════════
+@Composable
+fun BrowserScreen(runtime: GeckoRuntime) {
+    var urlText by remember { mutableStateOf("https://duckduckgo.com") }
+    var isLoading by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf(0) }
     
-    inner class NabdhWebViewClient : WebViewClient() {
+    // Gecko Session State
+    val session = remember { GeckoSession() }
+    
+    // Effect to open initial session
+    DisposableEffect(runtime) {
+        session.open(runtime)
+        session.loadUri(urlText)
         
-        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-            super.onPageStarted(view, url, favicon)
-            url?.let { 
-                currentUrl = it
-                updateUrlDisplay(it)
+        val progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStart(session: GeckoSession, url: String) {
+                isLoading = true
+                progress = 0
             }
-            hideError()
-            progressBar.visibility = View.VISIBLE
-            progressBar.progress = 0
-            updateRefreshButton(true)
+            override fun onPageStop(session: GeckoSession, success: Boolean) {
+                isLoading = false
+            }
+            override fun onProgressChange(session: GeckoSession, progressInt: Int) {
+                progress = progressInt
+            }
         }
-
-        override fun onPageFinished(view: WebView?, url: String?) {
-            super.onPageFinished(view, url)
-            progressBar.visibility = View.GONE
-            showLoading(false)
-            updateRefreshButton(false)
-            updateNavigationButtons()
+        
+        session.progressDelegate = progressDelegate
+        
+        onDispose {
+            session.close()
         }
+    }
 
-        override fun onReceivedError(
-            view: WebView?,
-            request: WebResourceRequest?,
-            error: WebResourceError?
+    NabdhTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.fillMaxSize()
         ) {
-            super.onReceivedError(view, request, error)
-            // تجاهل الأخطاء للموارد الفرعية
-            if (request?.isForMainFrame == true) {
-                showError(
-                    error?.errorCode ?: -1,
-                    error?.description?.toString()
+            Box(modifier = Modifier.fillMaxSize()) {
+                // 1. Browser Engine View
+                AndroidView(
+                    factory = { context ->
+                        GeckoView(context).apply {
+                            setSession(session)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
                 )
-                progressBar.visibility = View.GONE
-                updateRefreshButton(false)
-            }
-        }
 
-        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-            val url = request?.url?.toString() ?: return false
-            
-            // التعامل مع البروتوكولات الخاصة
-            return when {
-                url.startsWith("tel:") || 
-                url.startsWith("mailto:") || 
-                url.startsWith("intent:") -> {
-                    // فتح في التطبيق المناسب
-                    try {
-                        startActivity(android.content.Intent.parseUri(url, 0))
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            this@MainActivity, 
-                            getString(R.string.no_app_to_open), 
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    true
+                // 2. Minimalist Search/Address Bar (Floating)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                     MinimalSearchBar(
+                         currentUrl = urlText,
+                         onUrlChange = { urlText = it },
+                         onGo = { 
+                             val finalUrl = if (it.contains(".")) {
+                                 if (it.startsWith("http")) it else "https://$it"
+                             } else {
+                                 "https://duckduckgo.com/?q=$it"
+                             }
+                             session.loadUri(finalUrl) 
+                         },
+                         isLoading = isLoading,
+                         progress = progress
+                     )
                 }
-                else -> false // تحميل في WebView
             }
         }
     }
+}
 
-    // ═══════════════════════════════════════════════════════════════
-    // WebChromeClient - معالجة التقدم والعناوين
-    // ═══════════════════════════════════════════════════════════════
+@Composable
+fun MinimalSearchBar(
+    currentUrl: String,
+    onUrlChange: (String) -> Unit,
+    onGo: (String) -> Unit,
+    isLoading: Boolean,
+    progress: Int
+) {
+    val accentColor = MaterialTheme.colorScheme.primary
     
-    inner class NabdhChromeClient : WebChromeClient() {
-        
-        override fun onProgressChanged(view: WebView?, newProgress: Int) {
-            super.onProgressChanged(view, newProgress)
-            progressBar.progress = newProgress
+    // Glassmorphism container
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xCC111111), Color(0xF0000000))
+                ),
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(2.dp) // Border space
+    ) {
+        // Subtle Border Gradient
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF333333), accentColor.copy(alpha = 0.3f))
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+        )
+
+        // Content
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             
-            // إظهار المحتوى عند 30% لتجربة أسرع
-            if (newProgress > 30 && loadingOverlay.isVisible) {
-                showLoading(false)
+            // Loading Indicator vs Search Icon
+            Box(
+                 modifier = Modifier.size(24.dp),
+                 contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                   CircularProgressIndicator(
+                       progress = { progress / 100f },
+                       modifier = Modifier.size(20.dp),
+                       color = accentColor,
+                       trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                       strokeWidth = 2.dp,
+                   )
+                } else {
+                    // Minimal decorative dot or icon
+                    Box(modifier = Modifier
+                        .size(8.dp)
+                        .background(accentColor, RoundedCornerShape(50))
+                    )
+                }
             }
-        }
 
-        override fun onReceivedTitle(view: WebView?, title: String?) {
-            super.onReceivedTitle(view, title)
-            // يمكن استخدام العنوان لاحقاً للإشارات المرجعية
+            // Input Field
+            BasicTextField(
+                value = currentUrl,
+                onValueChange = onUrlChange,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                ),
+                cursorBrush = SolidColor(accentColor),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                keyboardActions = KeyboardActions(onGo = { onGo(currentUrl) }),
+                decorationBox = { innerTextField ->
+                     if (currentUrl.isEmpty()) {
+                         androidx.compose.material3.Text(
+                             "Enter URL or Search...",
+                             style = MaterialTheme.typography.bodyMedium
+                         )
+                     }
+                     innerTextField()
+                }
+            )
         }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // التعامل مع زر الرجوع
-    // ═══════════════════════════════════════════════════════════════
-    
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        when {
-            urlInput.hasFocus() -> {
-                urlInput.clearFocus()
-                hideKeyboard()
-            }
-            webView.canGoBack() -> webView.goBack()
-            else -> super.onBackPressed()
-        }
-    }
-
-    override fun onDestroy() {
-        pulseAnimator?.cancel()
-        webView.destroy()
-        super.onDestroy()
     }
 }
