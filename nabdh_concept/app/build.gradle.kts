@@ -62,5 +62,7 @@ dependencies {
     implementation(libs.geckoview)
     implementation(libs.kotlinx.coroutines.android)
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
     debugImplementation(libs.androidx.ui.tooling)
 }
