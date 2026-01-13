@@ -16,6 +16,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
+
+        // تحميل مفتاح API من local.properties
+        val properties = java.util.Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(java.io.FileInputStream(localPropertiesFile))
+        }
+        val geminiApiKey = properties.getProperty("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -34,7 +43,8 @@ android {
     }
     buildFeatures {
         compose = true
-        viewBinding = false // إيقاف النظام القديم تماماً
+        viewBinding = false
+        buildConfig = true // تفعيل BuildConfig
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.7"
@@ -61,6 +71,9 @@ dependencies {
     // المحرك
     implementation(libs.geckoview)
     implementation(libs.kotlinx.coroutines.android)
+
+    // الذكاء الاصطناعي
+    implementation(libs.google.ai.client)
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 

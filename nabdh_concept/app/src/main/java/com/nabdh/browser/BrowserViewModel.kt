@@ -77,24 +77,46 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         session.loadUri(finalUrl)
     }
 
-    // 🔥 دالة الذكاء الاصطناعي (المحاكاة للتجربة الأولية)
+    // تهيئة نموذج Gemini
+    val generativeModel = com.google.ai.client.generativeai.GenerativeModel(
+        modelName = "gemini-pro",
+        apiKey = BuildConfig.GEMINI_API_KEY
+    )
+
+    // 🔥 دالة الذكاء الاصطناعي
     fun summarizePage() {
         _uiState.update { it.copy(isSummarizing = true, showSummarySheet = true) }
 
-        // في المرحلة القادمة سنربط هذا بـ Google Gemini API الحقيقي
         viewModelScope.launch {
-            delay(2000) // محاكاة وقت "تفكير" الذكاء الاصطناعي
-            
-            val mockSummary = """
-                📌 تحليل ذكي للصفحة:
+            try {
+                // 1. (مؤقت) استخدام نص تجريبي حتى يتم تفعيل الاتصال بالإضافة
+                // في التطبيق الفعلي، ستأتي هذه البيانات من extension?.port?.postMessage(...)
+                val pageText = "نبض هو متصفح عربي جديد يهدف لتقديم تجربة مستخدم فريدة وسريعة مع التركيز على الخصوصية والتصميم العصري."
                 
-                • العنوان: ${_uiState.value.title}
-                • حالة الأمان: آمنة (HTTPS)
+                val prompt = """
+                    لخص المقال التالي باللغة العربية في نقاط موجزة (Bullet points) مع عنوان مناسب.
+                    النص: $pageText
+                """.trimIndent()
+
+                // 2. استدعاء API الحقيقي
+                val response = generativeModel.generateContent(prompt)
                 
-                هذا نموذج أولي لميزة التلخيص. تم تجهيز البنية التحتية (WebExtension) بنجاح لاستخراج النصوص. في الخطوة القادمة، سنقوم بإرسال النص المستخرج إلى Gemini Nano للحصول على ملخص دقيق.
-            """.trimIndent()
-            
-            _uiState.update { it.copy(isSummarizing = false, summaryResult = mockSummary) }
+                val resultText = response.text ?: "لم يتم إنشاء ملخص."
+
+                _uiState.update { 
+                    it.copy(
+                        isSummarizing = false, 
+                        summaryResult = resultText
+                    ) 
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isSummarizing = false, 
+                        summaryResult = "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${e.localizedMessage}"
+                    ) 
+                }
+            }
         }
     }
     
