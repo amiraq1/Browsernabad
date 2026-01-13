@@ -21,12 +21,63 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nabdh.browser.ui.theme.*
 import org.mozilla.geckoview.GeckoView
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowserScreen(
     viewModel: BrowserViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     var urlText by remember(state.url) { mutableStateOf(state.url) }
+    
+    // حالة النافذة المنبثقة
+    val sheetState = rememberModalBottomSheetState()
+    
+    if (state.showSummarySheet) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.closeSummary() },
+            sheetState = sheetState,
+            containerColor = Color(0xFF1A1A1A), // لون رمادي غامق جداً
+            contentColor = TextPrimary
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+                    .padding(bottom = 32.dp)
+            ) {
+                // رأس النافذة
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("✨", fontSize = 24.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = "نبض AI",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = NabdhPulseRed
+                    )
+                }
+                
+                Spacer(Modifier.height(24.dp))
+
+                if (state.isSummarizing) {
+                    // تأثير تحميل
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = NabdhPulseRed,
+                        trackColor = Color.Transparent
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text("جاري قراءة الصفحة وتحليل المحتوى...", color = Color.Gray)
+                } else {
+                    // النص الملخص
+                    Text(
+                        text = state.summaryResult ?: "فشل التلخيص",
+                        style = MaterialTheme.typography.bodyLarge,
+                        lineHeight = 28.sp
+                    )
+                }
+            }
+        }
+    }
 
     Scaffold(
         containerColor = NabdhBlack,
@@ -67,8 +118,8 @@ fun BrowserScreen(
                     }
 
                     // زر التلخيص (قلب نبض)
-                    IconButton(onClick = { /* سنضيف الذكاء الاصطناعي لاحقاً */ }) {
-                        Text("✨", fontSize = 20.sp) // أيقونة مؤقتة
+                    IconButton(onClick = { viewModel.summarizePage() }) {
+                        Text("✨", fontSize = 20.sp)
                     }
                 }
             }
