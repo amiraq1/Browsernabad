@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -31,7 +32,8 @@ fun BrowserScreen(
     
     // حالة النافذة المنبثقة
     val sheetState = rememberModalBottomSheetState()
-    
+
+    // 1. نافذة الذكاء الاصطناعي المنبثقة
     if (state.showSummarySheet) {
         ModalBottomSheet(
             onDismissRequest = { viewModel.closeSummary() },
@@ -82,12 +84,12 @@ fun BrowserScreen(
     Scaffold(
         containerColor = NabdhBlack,
         bottomBar = {
-            // شريط التحكم السفلي العائم (Avant-Garde Style)
+            // شريط التحكم السفلي العائم
             Surface(
                 color = NabdhSurface,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp) // لجعله عائماً
+                    .padding(16.dp)
                     .height(60.dp),
                 shape = RoundedCornerShape(24.dp),
                 shadowElevation = 12.dp
@@ -97,7 +99,7 @@ fun BrowserScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // حقل العنوان (Minimalist)
+                    // حقل العنوان
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -130,7 +132,7 @@ fun BrowserScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 1. محرك العرض
+            // محرك العرض
             AndroidView(
                 factory = { context ->
                     GeckoView(context).apply {
@@ -140,7 +142,7 @@ fun BrowserScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 2. شريط التقدم النبضي (Gradient Pulse)
+            // شريط التقدم النبضي
             if (state.isLoading) {
                 Box(
                     modifier = Modifier
