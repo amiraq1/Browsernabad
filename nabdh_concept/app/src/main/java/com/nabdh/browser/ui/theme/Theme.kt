@@ -12,14 +12,14 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = CyanPulse,
-    secondary = ElectricViolet,
-    tertiary = ToxicGreen,
-    background = VoidBlack,
-    surface = VoidDark,
-    onPrimary = VoidBlack,
-    onSecondary = TextPrimary,
-    onTertiary = VoidBlack,
+    primary = NabdhPulseRed,
+    secondary = NabdhCyan,
+    tertiary = SecureGreen,
+    background = NabdhBlack,
+    surface = NabdhSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.Black,
+    onTertiary = Color.White,
     onBackground = TextPrimary,
     onSurface = TextPrimary,
     error = ErrorRed
@@ -35,8 +35,8 @@ fun NabdhTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = VoidBlack.toArgb()
-            window.navigationBarColor = VoidBlack.toArgb()
+            window.statusBarColor = NabdhBlack.toArgb()
+            window.navigationBarColor = NabdhBlack.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
