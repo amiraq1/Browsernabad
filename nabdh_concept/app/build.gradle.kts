@@ -73,7 +73,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // الذكاء الاصطناعي
-    implementation(libs.google.ai.client)
+    implementation(libs.google.generative.ai)
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
