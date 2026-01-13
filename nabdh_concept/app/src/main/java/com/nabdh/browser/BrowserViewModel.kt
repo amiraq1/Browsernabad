@@ -89,31 +89,28 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
         viewModelScope.launch {
             try {
-                // 1. (مؤقت) استخدام نص تجريبي حتى يتم تفعيل الاتصال بالإضافة
-                // في التطبيق الفعلي، ستأتي هذه البيانات من extension?.port?.postMessage(...)
-                val pageText = "نبض هو متصفح عربي جديد يهدف لتقديم تجربة مستخدم فريدة وسريعة مع التركيز على الخصوصية والتصميم العصري."
+                // النص المستخرج (حالياً نستخدم نصاً تجريبياً لأن الاتصال بالإضافة لم يتم تفعيله بالكامل بعد)
+                // في الوضع الطبيعي سنستقبل النص من الإضافة هنا
+                val demoText = "نبض هو متصفح عربي جديد يهدف لتقديم تجربة مستخدم فريدة وسريعة مع التركيز على الخصوصية والتصميم العصري. يعتمد المتصفح على محرك GeckoView القوي ويستخدم الذكاء الاصطناعي لتلخيص المحتوى."
                 
-                val prompt = """
-                    لخص المقال التالي باللغة العربية في نقاط موجزة (Bullet points) مع عنوان مناسب.
-                    النص: $pageText
-                """.trimIndent()
+                val pageText = _uiState.value.summaryResult ?: demoText
+                
+                val prompt = "لخص هذا المقال باللغة العربية في نقاط رئيسية:\n$pageText"
 
-                // 2. استدعاء API الحقيقي
+                // 2. الاتصال بـ Gemini
                 val response = generativeModel.generateContent(prompt)
                 
-                val resultText = response.text ?: "لم يتم إنشاء ملخص."
-
                 _uiState.update { 
                     it.copy(
                         isSummarizing = false, 
-                        summaryResult = resultText
+                        summaryResult = response.text ?: "لم أتمكن من التلخيص"
                     ) 
                 }
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
                         isSummarizing = false, 
-                        summaryResult = "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: ${e.localizedMessage}"
+                        summaryResult = "خطأ في الاتصال: ${e.localizedMessage}"
                     ) 
                 }
             }
