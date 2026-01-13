@@ -17,20 +17,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // تحميل مفتاح API من local.properties
-        val properties = java.util.Properties()
-        val localPropertiesFile = project.rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            properties.load(java.io.FileInputStream(localPropertiesFile))
-        }
-        val geminiApiKey = properties.getProperty("GEMINI_API_KEY") ?: ""
-        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        // يتم تحميل المفتاح الآن عبر buildTypes
+
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "GEMINI_API_KEY", project.findProperty("GEMINI_API_KEY") as String? ?: "\"\"")
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "GEMINI_API_KEY", project.findProperty("GEMINI_API_KEY") as String? ?: "\"\"")
         }
     }
 
