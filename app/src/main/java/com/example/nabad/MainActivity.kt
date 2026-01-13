@@ -1,4 +1,4 @@
-package com.example.nabad  // تأكد أن هذا السطر يطابق ما هو موجود في ملفك الأصلي
+package com.example.nabad
 
 import android.os.Bundle
 import android.webkit.WebView
@@ -6,6 +6,10 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+
+// --- التصحيح هنا ---
+// نستورد R من المسار الصحيح لمشروعك الحالي
+import com.example.nabad.R
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,36 +19,33 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // هذا السطر هو الذي يربط الكود بملف التصميم الذي يحتوي على المتصفح
         setContentView(R.layout.activity_main)
 
-        // تعريف العناصر من ملف التصميم
+        // تعريف العناصر
         webView = findViewById(R.id.webView)
         urlInput = findViewById(R.id.urlInput)
         goButton = findViewById(R.id.goButton)
 
-        // إعدادات المتصفح الأساسية
+        // إعدادات المتصفح
         webView.settings.javaScriptEnabled = true
-        webView.webViewClient = WebViewClient() // لفتح الروابط داخل التطبيق
+        webView.webViewClient = WebViewClient()
 
-        // تحميل صفحة Google كبداية
+        // تحميل صفحة البداية
         webView.loadUrl("https://www.google.com")
 
-        // برمجة زر "اذهب"
+        // برمجة زر الذهاب
         goButton.setOnClickListener {
             val url = urlInput.text.toString()
             if (url.isNotEmpty()) {
                 if (url.startsWith("http")) {
                     webView.loadUrl(url)
                 } else {
-                    // إذا لم يكتب http نعتبره بحث في جوجل
                     webView.loadUrl("https://www.google.com/search?q=$url")
                 }
             }
         }
     }
 
-    // زر الرجوع في الهاتف يعود للصفحة السابقة في المتصفح
     override fun onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack()
